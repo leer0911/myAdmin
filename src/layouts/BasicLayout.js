@@ -84,9 +84,9 @@ class BasicLayout extends React.PureComponent {
         isMobile: mobile
       });
     });
-    // this.props.dispatch({
-    //   type: 'user/fetchCurrent'
-    // });
+    this.props.dispatch({
+      type: 'user/fetchCurrent'
+    });
   }
   getBashRedirect = () => {
     // According to the url parameter to redirect
@@ -113,35 +113,35 @@ class BasicLayout extends React.PureComponent {
     return title;
   }
   handleMenuCollapse = collapsed => {
-    // this.props.dispatch({
-    //   type: 'global/changeLayoutCollapsed',
-    //   payload: collapsed
-    // });
+    this.props.dispatch({
+      type: 'global/changeLayoutCollapsed',
+      payload: collapsed
+    });
   };
   handleNoticeClear = type => {
-    // message.success(`清空了${type}`);
-    // this.props.dispatch({
-    //   type: 'global/clearNotices',
-    //   payload: type
-    // });
+    message.success(`清空了${type}`);
+    this.props.dispatch({
+      type: 'global/clearNotices',
+      payload: type
+    });
   };
   handleMenuClick = ({ key }) => {
     // if (key === 'triggerError') {
     //   this.props.dispatch(routerRedux.push('/exception/trigger'));
     //   return;
     // }
-    // if (key === 'logout') {
-    //   this.props.dispatch({
-    //     type: 'login/logout'
-    //   });
-    // }
+    if (key === 'logout') {
+      this.props.dispatch({
+        type: 'login/logout'
+      });
+    }
   };
   handleNoticeVisibleChange = visible => {
-    // if (visible) {
-    //   this.props.dispatch({
-    //     type: 'global/fetchNotices'
-    //   });
-    // }
+    if (visible) {
+      this.props.dispatch({
+        type: 'global/fetchNotices'
+      });
+    }
   };
   render() {
     const {
@@ -245,4 +245,9 @@ class BasicLayout extends React.PureComponent {
   }
 }
 
-export default BasicLayout;
+export default connect(({ user, global, loading }) => ({
+  currentUser: user.currentUser,
+  collapsed: global.collapsed,
+  fetchingNotices: loading.effects['global/fetchNotices'],
+  notices: global.notices
+}))(BasicLayout);

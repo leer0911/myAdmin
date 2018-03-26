@@ -6,3 +6,7 @@ export async function fakeAccountLogin(params) {
     body: params
   });
 }
+
+export async function queryNotices() {
+  return request('/api/notices');
+}
