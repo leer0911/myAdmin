@@ -1,15 +1,41 @@
-import React from 'react';
-import { Layout, Menu, Breadcrumb, Icon, message } from 'antd';
-import Authorized from '../utils/Authorized';
+import React, { Fragment } from 'react';
+import PropTypes from 'prop-types';
+import { Layout, Icon, message } from 'antd';
 import DocumentTitle from 'react-document-title';
+import { connect } from 'dva';
+import { Route, Redirect, Switch, routerRedux } from 'dva/router';
 import { ContainerQuery } from 'react-container-query';
 import classNames from 'classnames';
+import { enquireScreen } from 'enquire-js';
 import GlobalHeader from '../components/GlobalHeader';
+import GlobalFooter from '../components/GlobalFooter';
+import SiderMenu from '../components/SiderMenu';
+import NotFound from '../routes/Exception/404';
+import { getRoutes } from '../utils/utils';
+import Authorized from '../utils/Authorized';
+import { getMenuData } from '../common/menu';
 import logo from '../assets/logo.svg';
 
-const { SubMenu } = Menu;
-const { Header, Content, Sider } = Layout;
-const { Secured } = Authorized;
+const { Content, Header, Footer } = Layout;
+const { AuthorizedRoute } = Authorized;
+/**
+ * 根据菜单取得重定向地址.
+ */
+const redirectData = [];
+const getRedirect = item => {
+  if (item && item.children) {
+    if (item.children[0] && item.children[0].path) {
+      redirectData.push({
+        from: `${item.path}`,
+        to: `${item.children[0].path}`
+      });
+      item.children.forEach(children => {
+        getRedirect(children);
+      });
+    }
+  }
+};
+getMenuData().forEach(getRedirect);
 
 const query = {
   'screen-xs': {
@@ -33,12 +59,49 @@ const query = {
 };
 
 let isMobile;
+enquireScreen(b => {
+  isMobile = b;
+});
 
-// 整个界面的权限控制
-@Secured('admin')
 class BasicLayout extends React.PureComponent {
+  static childContextTypes = {
+    location: PropTypes.object,
+    breadcrumbNameMap: PropTypes.object
+  };
   state = {
     isMobile
+  };
+  getChildContext() {
+    const { location, routerData } = this.props;
+    return {
+      location,
+      breadcrumbNameMap: routerData
+    };
+  }
+  componentDidMount() {
+    enquireScreen(mobile => {
+      this.setState({
+        isMobile: mobile
+      });
+    });
+    // this.props.dispatch({
+    //   type: 'user/fetchCurrent'
+    // });
+  }
+  getBashRedirect = () => {
+    // According to the url parameter to redirect
+    // 这里是重定向的,重定向到 url 的 redirect 参数所示地址
+    const urlParams = new URL(window.location.href);
+
+    const redirect = urlParams.searchParams.get('redirect');
+    // Remove the parameters in the url
+    if (redirect) {
+      urlParams.searchParams.delete('redirect');
+      window.history.replaceState(null, 'redirect', urlParams.href);
+    } else {
+      return '/dashboard/analysis';
+    }
+    return redirect;
   };
   getPageTitle() {
     const { routerData, location } = this.props;
@@ -50,17 +113,17 @@ class BasicLayout extends React.PureComponent {
     return title;
   }
   handleMenuCollapse = collapsed => {
-    this.props.dispatch({
-      type: 'global/changeLayoutCollapsed',
-      payload: collapsed
-    });
+    // this.props.dispatch({
+    //   type: 'global/changeLayoutCollapsed',
+    //   payload: collapsed
+    // });
   };
   handleNoticeClear = type => {
-    message.success(`清空了${type}`);
-    this.props.dispatch({
-      type: 'global/clearNotices',
-      payload: type
-    });
+    // message.success(`清空了${type}`);
+    // this.props.dispatch({
+    //   type: 'global/clearNotices',
+    //   payload: type
+    // });
   };
   handleMenuClick = ({ key }) => {
     // if (key === 'triggerError') {
@@ -74,101 +137,101 @@ class BasicLayout extends React.PureComponent {
     // }
   };
   handleNoticeVisibleChange = visible => {
-    if (visible) {
-      this.props.dispatch({
-        type: 'global/fetchNotices'
-      });
-    }
+    // if (visible) {
+    //   this.props.dispatch({
+    //     type: 'global/fetchNotices'
+    //   });
+    // }
   };
   render() {
     const {
       currentUser = {},
       collapsed,
       fetchingNotices,
-      notices
+      notices,
+      routerData,
+      match,
+      location
     } = this.props;
+    const bashRedirect = this.getBashRedirect();
     const layout = (
       <Layout>
-        <Header style={{ padding: 0 }}>
-          <GlobalHeader
-            logo={logo}
-            currentUser={currentUser}
-            fetchingNotices={fetchingNotices}
-            notices={notices}
-            collapsed={collapsed}
-            isMobile={this.state.isMobile}
-            onNoticeClear={this.handleNoticeClear}
-            onCollapse={this.handleMenuCollapse}
-            onMenuClick={this.handleMenuClick}
-            onNoticeVisibleChange={this.handleNoticeVisibleChange}
-          />
-        </Header>
+        <SiderMenu
+          logo={logo}
+          // 不带Authorized参数的情况下如果没有权限,会强制跳到403界面
+          // If you do not have the Authorized parameter
+          // you will be forced to jump to the 403 interface without permission
+          Authorized={Authorized}
+          menuData={getMenuData()}
+          collapsed={collapsed}
+          location={location}
+          isMobile={this.state.isMobile}
+          onCollapse={this.handleMenuCollapse}
+        />
         <Layout>
-          <Sider width={200} style={{ background: '#fff' }}>
-            <Menu
-              mode="inline"
-              defaultSelectedKeys={['1']}
-              defaultOpenKeys={['sub1']}
-              style={{ height: '100%', borderRight: 0 }}
-            >
-              <SubMenu
-                key="sub1"
-                title={
-                  <span>
-                    <Icon type="user" />subnav 1
-                  </span>
+          <Header style={{ padding: 0 }}>
+            <GlobalHeader
+              logo={logo}
+              currentUser={currentUser}
+              fetchingNotices={fetchingNotices}
+              notices={notices}
+              collapsed={collapsed}
+              isMobile={this.state.isMobile}
+              onNoticeClear={this.handleNoticeClear}
+              onCollapse={this.handleMenuCollapse}
+              onMenuClick={this.handleMenuClick}
+              onNoticeVisibleChange={this.handleNoticeVisibleChange}
+            />
+          </Header>
+          <Content style={{ margin: '24px 24px 0', height: '100%' }}>
+            <Switch>
+              {redirectData.map(item => (
+                <Redirect key={item.from} exact from={item.from} to={item.to} />
+              ))}
+              {getRoutes(match.path, routerData).map(item => (
+                <AuthorizedRoute
+                  key={item.key}
+                  path={item.path}
+                  component={item.component}
+                  exact={item.exact}
+                  authority={item.authority}
+                  redirectPath="/exception/403"
+                />
+              ))}
+              <Redirect exact from="/" to={bashRedirect} />
+              <Route render={NotFound} />
+            </Switch>
+          </Content>
+          <Footer style={{ padding: 0 }}>
+            <GlobalFooter
+              links={[
+                {
+                  key: 'Pro 首页',
+                  title: 'Pro 首页',
+                  href: 'http://pro.ant.design',
+                  blankTarget: true
+                },
+                {
+                  key: 'github',
+                  title: <Icon type="github" />,
+                  href: 'https://github.com/ant-design/ant-design-pro',
+                  blankTarget: true
+                },
+                {
+                  key: 'Ant Design',
+                  title: 'Ant Design',
+                  href: 'http://ant.design',
+                  blankTarget: true
                 }
-              >
-                <Menu.Item key="1">option1</Menu.Item>
-                <Menu.Item key="2">option2</Menu.Item>
-                <Menu.Item key="3">option3</Menu.Item>
-                <Menu.Item key="4">option4</Menu.Item>
-              </SubMenu>
-              <SubMenu
-                key="sub2"
-                title={
-                  <span>
-                    <Icon type="laptop" />subnav 2
-                  </span>
-                }
-              >
-                <Menu.Item key="5">option5</Menu.Item>
-                <Menu.Item key="6">option6</Menu.Item>
-                <Menu.Item key="7">option7</Menu.Item>
-                <Menu.Item key="8">option8</Menu.Item>
-              </SubMenu>
-              <SubMenu
-                key="sub3"
-                title={
-                  <span>
-                    <Icon type="notification" />subnav 3
-                  </span>
-                }
-              >
-                <Menu.Item key="9">option9</Menu.Item>
-                <Menu.Item key="10">option10</Menu.Item>
-                <Menu.Item key="11">option11</Menu.Item>
-                <Menu.Item key="12">option12</Menu.Item>
-              </SubMenu>
-            </Menu>
-          </Sider>
-          <Layout style={{ padding: '0 24px 24px' }}>
-            <Breadcrumb style={{ margin: '16px 0' }}>
-              <Breadcrumb.Item>Home</Breadcrumb.Item>
-              <Breadcrumb.Item>List</Breadcrumb.Item>
-              <Breadcrumb.Item>App</Breadcrumb.Item>
-            </Breadcrumb>
-            <Content
-              style={{
-                background: '#fff',
-                padding: 24,
-                margin: 0,
-                minHeight: 280
-              }}
-            >
-              Content
-            </Content>
-          </Layout>
+              ]}
+              copyright={
+                <Fragment>
+                  Copyright <Icon type="copyright" /> 2018
+                  蚂蚁金服体验技术部出品
+                </Fragment>
+              }
+            />
+          </Footer>
         </Layout>
       </Layout>
     );
