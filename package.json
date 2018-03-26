@@ -9,10 +9,12 @@
   "dependencies": {
     "antd": "^3.3.1",
     "babel-plugin-import": "^1.6.7",
+    "classnames": "^2.2.5",
     "dva": "^2.1.0",
     "dva-loading": "^1.0.4",
     "mockjs": "^1.0.1-beta3",
     "react": "^16.2.0",
+    "react-container-query": "^0.11.0",
     "react-document-title": "^2.0.3",
     "react-dom": "^16.2.0",
     "roadhog-api-doc": "^1.0.0"

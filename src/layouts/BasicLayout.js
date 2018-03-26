@@ -1,16 +1,49 @@
 import React from 'react';
 import { Layout, Menu, Breadcrumb, Icon } from 'antd';
 import Authorized from '../utils/Authorized';
+import DocumentTitle from 'react-document-title';
+import { ContainerQuery } from 'react-container-query';
+import classNames from 'classnames';
 
 const { SubMenu } = Menu;
 const { Header, Content, Sider } = Layout;
 const { Secured } = Authorized;
 
+const query = {
+  'screen-xs': {
+    maxWidth: 575
+  },
+  'screen-sm': {
+    minWidth: 576,
+    maxWidth: 767
+  },
+  'screen-md': {
+    minWidth: 768,
+    maxWidth: 991
+  },
+  'screen-lg': {
+    minWidth: 992,
+    maxWidth: 1199
+  },
+  'screen-xl': {
+    minWidth: 1200
+  }
+};
+
 // 整个界面的权限控制
 @Secured('admin')
 class BasicLayout extends React.PureComponent {
+  getPageTitle() {
+    const { routerData, location } = this.props;
+    const { pathname } = location;
+    let title = 'Ant Design Pro';
+    if (routerData[pathname] && routerData[pathname].name) {
+      title = `${routerData[pathname].name} - Ant Design Pro`;
+    }
+    return title;
+  }
   render() {
-    return (
+    const layout = (
       <Layout>
         <Header className="header">
           <div className="logo" />
@@ -93,6 +126,13 @@ class BasicLayout extends React.PureComponent {
           </Layout>
         </Layout>
       </Layout>
+    );
+    return (
+      <DocumentTitle title={this.getPageTitle()}>
+        <ContainerQuery query={query}>
+          {params => <div className={classNames(params)}>{layout}</div>}
+        </ContainerQuery>
+      </DocumentTitle>
     );
   }
 }
