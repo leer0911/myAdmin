@@ -1,7 +1,7 @@
 import { routerRedux } from 'dva/router';
 import { fakeAccountLogin } from '../services/api';
-// import { setAuthority } from '../utils/authority';
-// import { reloadAuthorized } from '../utils/Authorized';
+import { setAuthority } from '../utils/authority';
+import { reloadAuthorized } from '../utils/Authorized';
 
 export default {
   namespace: 'login',
@@ -19,7 +19,7 @@ export default {
       });
       // Login successfully
       if (response.status === 'ok') {
-        // reloadAuthorized();
+        reloadAuthorized();
         yield put(routerRedux.push('/'));
       }
     }
@@ -27,7 +27,7 @@ export default {
 
   reducers: {
     changeLoginStatus(state, { payload }) {
-      // setAuthority(payload.currentAuthority);
+      setAuthority(payload.currentAuthority);
       return {
         ...state,
         status: payload.status,
