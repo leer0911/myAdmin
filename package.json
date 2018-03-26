@@ -12,6 +12,8 @@
     "classnames": "^2.2.5",
     "dva": "^2.1.0",
     "dva-loading": "^1.0.4",
+    "lodash": "^4.17.5",
+    "lodash-decorators": "^5.0.0",
     "mockjs": "^1.0.1-beta3",
     "react": "^16.2.0",
     "react-container-query": "^0.11.0",

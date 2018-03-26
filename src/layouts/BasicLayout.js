@@ -1,9 +1,11 @@
 import React from 'react';
-import { Layout, Menu, Breadcrumb, Icon } from 'antd';
+import { Layout, Menu, Breadcrumb, Icon, message } from 'antd';
 import Authorized from '../utils/Authorized';
 import DocumentTitle from 'react-document-title';
 import { ContainerQuery } from 'react-container-query';
 import classNames from 'classnames';
+import GlobalHeader from '../components/GlobalHeader';
+import logo from '../assets/logo.svg';
 
 const { SubMenu } = Menu;
 const { Header, Content, Sider } = Layout;
@@ -30,9 +32,14 @@ const query = {
   }
 };
 
+let isMobile;
+
 // 整个界面的权限控制
 @Secured('admin')
 class BasicLayout extends React.PureComponent {
+  state = {
+    isMobile
+  };
   getPageTitle() {
     const { routerData, location } = this.props;
     const { pathname } = location;
@@ -42,21 +49,59 @@ class BasicLayout extends React.PureComponent {
     }
     return title;
   }
+  handleMenuCollapse = collapsed => {
+    this.props.dispatch({
+      type: 'global/changeLayoutCollapsed',
+      payload: collapsed
+    });
+  };
+  handleNoticeClear = type => {
+    message.success(`清空了${type}`);
+    this.props.dispatch({
+      type: 'global/clearNotices',
+      payload: type
+    });
+  };
+  handleMenuClick = ({ key }) => {
+    // if (key === 'triggerError') {
+    //   this.props.dispatch(routerRedux.push('/exception/trigger'));
+    //   return;
+    // }
+    // if (key === 'logout') {
+    //   this.props.dispatch({
+    //     type: 'login/logout'
+    //   });
+    // }
+  };
+  handleNoticeVisibleChange = visible => {
+    if (visible) {
+      this.props.dispatch({
+        type: 'global/fetchNotices'
+      });
+    }
+  };
   render() {
+    const {
+      currentUser = {},
+      collapsed,
+      fetchingNotices,
+      notices
+    } = this.props;
     const layout = (
       <Layout>
-        <Header className="header">
-          <div className="logo" />
-          <Menu
-            theme="dark"
-            mode="horizontal"
-            defaultSelectedKeys={['2']}
-            style={{ lineHeight: '64px' }}
-          >
-            <Menu.Item key="1">nav 1</Menu.Item>
-            <Menu.Item key="2">nav 2</Menu.Item>
-            <Menu.Item key="3">nav 3</Menu.Item>
-          </Menu>
+        <Header style={{ padding: 0 }}>
+          <GlobalHeader
+            logo={logo}
+            currentUser={currentUser}
+            fetchingNotices={fetchingNotices}
+            notices={notices}
+            collapsed={collapsed}
+            isMobile={this.state.isMobile}
+            onNoticeClear={this.handleNoticeClear}
+            onCollapse={this.handleMenuCollapse}
+            onMenuClick={this.handleMenuClick}
+            onNoticeVisibleChange={this.handleNoticeVisibleChange}
+          />
         </Header>
         <Layout>
           <Sider width={200} style={{ background: '#fff' }}>
