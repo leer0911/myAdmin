@@ -89,6 +89,16 @@ export const getRouterData = app => {
         import('../routes/User/Login')
       )
     },
+    '/user/register': {
+      component: dynamicWrapper(app, ['register'], () =>
+        import('../routes/User/Register')
+      )
+    },
+    '/user/register-result': {
+      component: dynamicWrapper(app, [], () =>
+        import('../routes/User/RegisterResult')
+      )
+    },
     '/exception/403': {
       component: dynamicWrapper(app, [], () =>
         import('../routes/Exception/403')

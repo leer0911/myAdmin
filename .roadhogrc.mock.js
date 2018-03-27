@@ -47,6 +47,9 @@ const proxy = {
       address: 'Sidney No. 1 Lake Park'
     }
   ],
+  'POST /api/register': (req, res) => {
+    res.send({ status: 'ok', currentAuthority: 'user' });
+  },
   'POST /api/login/account': (req, res) => {
     const { password, userName, type } = req.body;
     if (password === '888888' && userName === 'admin') {

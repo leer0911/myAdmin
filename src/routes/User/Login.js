@@ -9,15 +9,15 @@ const { Tab, UserName, Password, Mobile, Captcha, Submit } = Login;
 
 @connect(({ login, loading }) => ({
   login,
-  submitting: loading.effects['login/login']
+  submitting: loading.effects['login/login'],
 }))
 export default class LoginPage extends Component {
   state = {
     type: 'account',
-    autoLogin: true
+    autoLogin: true,
   };
 
-  onTabChange = type => {
+  onTabChange = (type) => {
     this.setState({ type });
   };
 
@@ -28,27 +28,20 @@ export default class LoginPage extends Component {
         type: 'login/login',
         payload: {
           ...values,
-          type
-        }
+          type,
+        },
       });
     }
   };
 
-  changeAutoLogin = e => {
+  changeAutoLogin = (e) => {
     this.setState({
-      autoLogin: e.target.checked
+      autoLogin: e.target.checked,
     });
   };
 
-  renderMessage = content => {
-    return (
-      <Alert
-        style={{ marginBottom: 24 }}
-        message={content}
-        type="error"
-        showIcon
-      />
-    );
+  renderMessage = (content) => {
+    return <Alert style={{ marginBottom: 24 }} message={content} type="error" showIcon />;
   };
 
   render() {
@@ -56,11 +49,7 @@ export default class LoginPage extends Component {
     const { type } = this.state;
     return (
       <div className={styles.main}>
-        <Login
-          defaultActiveKey={type}
-          onTabChange={this.onTabChange}
-          onSubmit={this.handleSubmit}
-        >
+        <Login defaultActiveKey={type} onTabChange={this.onTabChange} onSubmit={this.handleSubmit}>
           <Tab key="account" tab="账户密码登录">
             {login.status === 'error' &&
               login.type === 'account' &&
@@ -78,10 +67,7 @@ export default class LoginPage extends Component {
             <Captcha name="captcha" />
           </Tab>
           <div>
-            <Checkbox
-              checked={this.state.autoLogin}
-              onChange={this.changeAutoLogin}
-            >
+            <Checkbox checked={this.state.autoLogin} onChange={this.changeAutoLogin}>
               自动登录
             </Checkbox>
             <a style={{ float: 'right' }} href="">
