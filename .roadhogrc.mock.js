@@ -1,6 +1,7 @@
 import mockjs from 'mockjs';
 import { format, delay } from 'roadhog-api-doc';
 import { getNotices } from './mock/notices';
+import { getFakeChartData } from './mock/chart';
 
 // 是否禁用代理
 const noProxy = process.env.NO_PROXY === 'true';
@@ -24,6 +25,7 @@ const proxy = {
       notifyCount: 12
     }
   },
+  'GET /api/fake_chart_data': getFakeChartData,
   // GET POST 可省略
   'GET /api/users': [
     {
